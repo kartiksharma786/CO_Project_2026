@@ -197,7 +197,99 @@ for line_num, line in enumerate(lines,1):
         binary = imm1 + rs2_bin + rs1_bin + funct3[instr] + imm2 + opcodes[instr]
 
         output.append(binary)
+    elif t == "R":
+        if len(parts) != 4:
+            print(f"ERROR line {line_num}: R-type requires 3 arguements ")
+            continue
 
+        rd  = parts[1]
+        rs1 = parts[2]
+        rs2 = parts[3]
+
+        if rd not in registers or rs1 not in registers or rs2 not in registers:
+            print(f"ERROR line {line_num}: Invalid register in '{line}'")
+            continue
+
+        rd_bin  = registers[rd]
+        rs1_bin = registers[rs1]
+        rs2_bin = registers[rs2]
+
+        op = opcodes[instr]
+        f3 = funct3[instr]
+        f7 = funct7[instr]
+
+        binary = f7 + rs2_bin + rs1_bin + f3 + rd_bin + op
+        output.append(binary)
+        print(f"Line {line_num}: {binary}")
+    elif t == "I":
+        if len(parts) != 4:
+            print(f"ERROR line {line_num}: I-type requires 3 arguements")
+            continue
+
+        rd = parts[1]
+        if rd not in registers:
+            print(f"ERROR line {line_num}: Invalid register in '{line}'")
+            continue
+        rd_bin = registers[rd]
+
+        if instr == "lw":
+            st = parts[2]
+            imm = int(st.split("(")[0])
+            rs1 = st.split("(")[1]
+            rs1=rs1[:-1]#to remove last bracket
+        else:
+            rs1  = parts[2]
+            imm  = int(parts[3])
+
+        if rs1 not in registers:
+            print(f"ERROR line {line_num}: Invalid register in '{line}'")
+            continue
+        rs1_bin = registers[rs1]
+
+        bin = ""
+        if imm >= 0:
+            x = imm
+            while x > 0:
+                bin = str(x % 2) + bin
+                x //= 2
+            rbin = bin
+            while len(rbin) < 12:
+                rbin = "0" + rbin
+        else:
+            x = -imm
+            while x > 0:
+                bin = str(x % 2) + bin
+                x //= 2
+            rbin = bin
+            while len(rbin) < 12:
+                rbin = "0" + rbin
+            inv = ""
+            for i in rbin:
+                if i == "0":
+                    inv += "1"
+                else:
+                    inv += "0"
+            rbin = inv
+            carry = 1
+            temp = ""
+            for i in rbin[::-1]:
+                if i == "1" and carry == 1:
+                    temp = "0" + temp
+                elif i == "0" and carry == 1:
+                    temp = "1" + temp
+                    carry = 0
+                else:
+                    temp = i + temp
+            rbin = temp
+            while len(rbin) < 12:
+                rbin = "0" + rbin
+
+        op = opcodes[instr]
+        f3 = funct3[instr]
+
+        binary = rbin + rs1_bin + f3 + rd_bin + op
+        output.append(binary)
+        print(f"Line {line_num}: {binary}")
     elif t == "B":
 
         if len(parts) < 4:
