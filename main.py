@@ -259,7 +259,6 @@ for line_num, line in enumerate(lines,1):
     pc += 4
 
 if error_found == False:
-
     file = open(output_file, "w")
 
     for line in output:
