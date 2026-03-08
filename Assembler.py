@@ -293,7 +293,7 @@ for line_num, line in enumerate(lines,1):
             error_f = True
             continue
 
-        imm = offset // 2
+        imm = offset 
         i_bin = bin((1<<13)+imm if imm<0 else imm)[2:].zfill(13)
 
         binary = i_bin[0] + i_bin[2:8] + registers[rs2] + registers[rs1] + funct3[instr] + i_bin[8:12] + i_bin[1] + opcodes[instr]
@@ -319,7 +319,7 @@ for line_num, line in enumerate(lines,1):
             continue
 
         offset = labels[label] - pc
-        imm = offset // 2
+        imm = offset 
         i_bin = bin((1<<21)+imm if imm<0 else imm)[2:].zfill(21)
 
         binary = i_bin[0] + i_bin[10:20] + i_bin[9] + i_bin[1:9] + registers[rd] + opcodes[instr]
