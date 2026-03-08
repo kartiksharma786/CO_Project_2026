@@ -4,7 +4,7 @@ input_file = sys.argv[1]
 output_file = sys.argv[2]
 
 f = open(input_file, "r")
-lines = f.readlines()
+lines = f.readlines()                                   
 f.close()
 
 error_f = False
@@ -73,7 +73,7 @@ funct7={
 
 lst_instruc = ""
 
-for line in reversed(lines):                            
+for line in reversed(lines):                                    #line ko reverse order me read karenge taki last instruction mile             
     line = line.strip()
 
     if line == "":
@@ -82,23 +82,23 @@ for line in reversed(lines):
     if ":" in line:
         parts = line.split(":")
         if parts[1].strip() != "":
-            lst_instruc = parts[1].strip()                   
+            lst_instruc = parts[1].strip()                              #agar label ke baad instruction hai to use lst_instruc me store karenge
             break
     else:
         lst_instruc = line
         break
 
-check_line = lst_instruc.replace(",", " ")                      
+check_line = lst_instruc.replace(",", " ")                              #last instruction me se comma hata kar uske parts dekhenge
 check_parts = check_line.split()
 
-if len(check_parts) < 4 or check_parts[0] != "beq" or check_parts[1] != "zero" or check_parts[2] != "zero":
+if len(check_parts) < 4 or check_parts[0] != "beq" or check_parts[1] != "zero" or check_parts[2] != "zero":      #last instruction beq zero zero hona chahiye
     print("ERROR: Missing virtual HALT")
     sys.exit()
 
 labels = {}
 pc = 0
 
-for line_num, line in enumerate(lines,1):
+for line_num, line in enumerate(lines,1):                                       #line ko reverse order me read karenge taki labels ke addresses mile
     line = line.strip()
 
     if line == "":
@@ -108,7 +108,7 @@ for line_num, line in enumerate(lines,1):
         label=line.split(":")[0]
 
         if label in labels:
-            print(f"ERROR line {line_num}: duplicate label '{label}'")
+            print(f"ERROR line {line_num}: duplicate label '{label}'")                      #agar label pehle se available hai to error
             error_f = True
         else:
             labels[label] = pc
@@ -121,7 +121,7 @@ for line_num, line in enumerate(lines,1):
 output = []
 pc = 0
 
-for line_num, line in enumerate(lines,1):
+for line_num, line in enumerate(lines,1):                       #abhi jo line read karenge usko process karenge taki binary code generate ho sake
     line = line.strip()
     if line == "":
         continue
@@ -133,22 +133,22 @@ for line_num, line in enumerate(lines,1):
     line = line.replace(",", " ")
     parts = line.split()
 
-    if len(parts) == 0:
+    if len(parts) == 0:                     #agar line me sirf label hai to usko skip karenge
         continue
 
     instr = parts[0]
 
-    if instr not in all_instructions:
+    if instr not in all_instructions:                       #agar instruction unknown hai to error
         if instr in labels:
             print(f"ERROR line {line_num}: Label '{instr}' used as instruction")
         else:
-            print(f"ERROR line {line_num}: Unknown instruction '{instr}'")
+            print(f"ERROR line {line_num}: Unknown instruction '{instr}'")                  
         error_f = True
         continue
 
-    t = instr_to_type[instr]
+    t = instr_to_type[instr]                #instruction ke type ke hisab se usko process karenge taki binary code generate ho sake
 
-    if t == "U":
+    if t == "U":                                                            #U-type instructions 
         if len(parts) != 3:
             print(f"ERROR line {line_num}: missing operands")
             error_f = True
@@ -168,12 +168,12 @@ for line_num, line in enumerate(lines,1):
             continue
 
         rd_bin = registers[rd]
-        i_bin = bin(imm & ((1<<20)-1))[2:].zfill(20)
+        i_bin = bin(imm & ((1<<20)-1))[2:].zfill(20)                                    #immediate ko 20 bit me convert karenge (negative ke liye 2's complement)
 
         binary = i_bin + rd_bin + opcodes[instr]
         output.append(binary)
 
-    elif t == "S":
+    elif t == "S":                                              #S-type instructions                
         if len(parts) != 3:
             print(f"ERROR line {line_num}: missing operands")
             error_f = True
@@ -202,12 +202,12 @@ for line_num, line in enumerate(lines,1):
 
         rs1_bin = registers[rs1]
         rs2_bin = registers[rs2]
-        i_bin = bin((1<<12)+imm if imm<0 else imm)[2:].zfill(12)
+        i_bin = bin((1<<12)+imm if imm<0 else imm)[2:].zfill(12)                                #immediate ko 12 bit me convert karenge (negative ke liye 2's complement)
 
         binary = i_bin[0:7] + rs2_bin + rs1_bin + funct3[instr] + i_bin[7:] + opcodes[instr]
         output.append(binary)
 
-    elif t == "R":
+    elif t == "R":                                                           #R-type instructions
         if len(parts) != 4:
             print(f"ERROR line {line_num}: r-type requires 3 arguments")
             error_f = True
@@ -225,7 +225,7 @@ for line_num, line in enumerate(lines,1):
         binary = funct7[instr] + registers[rs2] + registers[rs1] + funct3[instr] + registers[rd] + opcodes[instr]
         output.append(binary)
 
-    elif t == "I":
+    elif t == "I":                                                             #I-type instructions 
         if instr == "lw" and len(parts) != 3:
             print(f"ERROR line {line_num}: lw requires 2 arguments")
             error_f = True
@@ -259,11 +259,11 @@ for line_num, line in enumerate(lines,1):
             error_f = True
             continue
 
-        i_bin = bin((1<<12)+imm if imm<0 else imm)[2:].zfill(12)
-        binary = i_bin + registers[rs1] + funct3[instr] + registers[rd] + opcodes[instr]
+        i_bin = bin((1<<12)+imm if imm<0 else imm)[2:].zfill(12)                                            #immediate ko 12 bit me convert karenge (negative ke liye 2's complement)
+        binary = i_bin + registers[rs1] + funct3[instr] + registers[rd] + opcodes[instr]                    #I-type instructions ke format ke hisab se binary code generate karenge
         output.append(binary)
 
-    elif t == "B":
+    elif t == "B":                                                            #B-type instructions
         if len(parts) != 4:
             print(f"ERROR line {line_num}: missing operands")
             error_f = True
@@ -289,17 +289,17 @@ for line_num, line in enumerate(lines,1):
                 continue
 
         if offset < -4096 or offset > 4094:
-            print(f"ERROR line {line_num}: branch offset out of range")
+            print(f"ERROR line {line_num}: branch offset out of range")                 #branch offset -4096 se chhota ya 4094 se bada nahi hona chahiye 
             error_f = True
             continue
 
         imm = offset 
-        i_bin = bin((1<<13)+imm if imm<0 else imm)[2:].zfill(13)
+        i_bin = bin((1<<13)+imm if imm<0 else imm)[2:].zfill(13)                        #branch offset ko 13 bit me convert karenge (negative ke liye 2's complement)
 
-        binary = i_bin[0] + i_bin[2:8] + registers[rs2] + registers[rs1] + funct3[instr] + i_bin[8:12] + i_bin[1] + opcodes[instr]
+        binary = i_bin[0] + i_bin[2:8] + registers[rs2] + registers[rs1] + funct3[instr] + i_bin[8:12] + i_bin[1] + opcodes[instr]                      #B-type instructions ke format ke hisab se binary code generate karenge
         output.append(binary)
 
-    elif t == "J":
+    elif t == "J":                                                      #J-type instructions                                        
         if len(parts) != 3:
             print(f"ERROR line {line_num}: j-type requires rd label")
             error_f = True
@@ -320,9 +320,9 @@ for line_num, line in enumerate(lines,1):
 
         offset = labels[label] - pc
         imm = offset 
-        i_bin = bin((1<<21)+imm if imm<0 else imm)[2:].zfill(21)
+        i_bin = bin((1<<21)+imm if imm<0 else imm)[2:].zfill(21)                            #jump offset ko 21 bit me convert karenge (negative ke liye 2's complement)
 
-        binary = i_bin[0] + i_bin[10:20] + i_bin[9] + i_bin[1:9] + registers[rd] + opcodes[instr]
+        binary = i_bin[0] + i_bin[10:20] + i_bin[9] + i_bin[1:9] + registers[rd] + opcodes[instr]                   #J-type instructions ke format ke hisab se binary code generate karenge
         output.append(binary)
 
     pc += 4
