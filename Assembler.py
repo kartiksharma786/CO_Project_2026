@@ -183,7 +183,7 @@ for line_num, line in enumerate(lines,1):                       #abhi jo line re
         st = parts[2]
 
         try:
-            imm = int(st.split("(")[0])
+            imm = int(st.split("(")[0],0)
             rs1 = st.split("(")[1][:-1]
         except:
             print(f"ERROR line {line_num}: invalid memory format")
@@ -243,11 +243,11 @@ for line_num, line in enumerate(lines,1):                       #abhi jo line re
 
         if instr == "lw":
             st = parts[2]
-            imm = int(st.split("(")[0])
+            imm = int(st.split("(")[0],0)
             rs1 = st.split("(")[1][:-1]
         else:
             rs1  = parts[2]
-            imm  = int(parts[3])
+            imm  = int(parts[3],0)
 
         if rs1 not in registers:
             print(f"ERROR line {line_num}: invalid register")
@@ -282,7 +282,7 @@ for line_num, line in enumerate(lines,1):                       #abhi jo line re
             offset = labels[label] - pc
         else:
             try:
-                offset = int(label)
+                offset = int(label,0)
             except ValueError:
                 print(f"ERROR line {line_num}: undefined label '{label}'")
                 error_f = True
