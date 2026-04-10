@@ -339,7 +339,7 @@ while True:
     else:
         print("Unknown opcode:", opcode)
         break
-    +regs[0] = 0
+    regs[0] = 0
 
     line = "0b" + to_bin(PC)
     for r in regs:
