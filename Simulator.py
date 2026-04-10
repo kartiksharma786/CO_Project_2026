@@ -339,3 +339,36 @@ while True:
     else:
         print("Unknown opcode:", opcode)
         break
+    +regs[0] = 0
+
+    line = "0b" + to_bin(PC)
+    for r in regs:
+        line = line + " 0b" + to_bin(r)
+
+    output_lines.append(line)
+
+    if opcode == "1100011" and halt:
+        break
+
+if not error_found:
+    for i in range(32):
+        addr = 0x00010000 + i * 4
+        val = memory.get(addr, 0)
+
+        # address ko 8 digit hex mein convert
+        addr_hex = format(addr, '08X')
+
+        # value ko 32-bit binary mein convert
+        val_binary = to_bin(val)
+
+        # dono jod ke line banao
+        line = "0x" + addr_hex + ":0b" + val_binary
+
+        output_lines.append(line)
+
+f = open(output_file, "w")
+for l in output_lines:
+    f.write(l + "\n")
+f.close()
+
+print("Done, output saved in", output_file)
