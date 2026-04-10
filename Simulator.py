@@ -89,3 +89,96 @@ def check_memory_access(addr, rs1, pc):
     return True
 
 error_found = False
+
+while True:
+
+    index = PC // 4
+
+    if index < 0 or index >= len(instructions):
+        print("PC out of range:", PC)
+        break
+
+    instr = instructions[index]
+    opcode = instr[25:32]
+    halt = False
+
+    if opcode == "0110011":
+
+        funct7 = instr[0:7]
+        rs2 = int(instr[7:12], 2)
+        rs1 = int(instr[12:17], 2)
+        funct3 = instr[17:20]
+        rd = int(instr[20:25], 2)
+
+        v1 = regs[rs1]
+        v2 = regs[rs2]
+
+        result = 0
+
+        if funct3 == "000":
+            if funct7 == "0000000":
+                result = mask32(v1 + v2)
+            elif funct7 == "0100000":
+                result = mask32(v1 - v2)
+
+        elif funct3 == "001":
+            result = mask32(v1 << (v2 & 31))
+
+        elif funct3 == "010":
+            if to_signed(v1) < to_signed(v2):
+                result = 1
+            else:
+                result = 0
+
+        elif funct3 == "011":
+            if (v1 & 0xFFFFFFFF) < (v2 & 0xFFFFFFFF):
+                result = 1
+            else:
+                result = 0
+
+        elif funct3 == "100":
+            result = mask32(v1 ^ v2)
+
+        elif funct3 == "101":
+            if funct7 == "0000000":
+                result = mask32(v1 >> (v2 & 31))
+
+        elif funct3 == "110":
+            result = mask32(v1 | v2)
+
+        elif funct3 == "111":
+            result = mask32(v1 & v2)
+
+        if rd != 0:
+            regs[rd] = result
+
+        PC = PC + 4
+
+    elif opcode == "0010011":
+
+        imm_bits = instr[0:12]
+        imm_number = int(imm_bits, 2)
+        imm = sign_ext(imm_number, 12)
+
+        rs1 = int(instr[12:17], 2)
+        funct3 = instr[17:20]
+        rd = int(instr[20:25], 2)
+
+        result = 0
+
+        if funct3 == "000":
+            result = mask32(regs[rs1] + imm)
+
+        elif funct3 == "011":
+            rs1_unsigned = regs[rs1] & 0xFFFFFFFF
+            imm_unsigned = imm & 0xFFFFFFFF
+
+            if rs1_unsigned < imm_unsigned:
+                result = 1
+            else:
+                result = 0
+
+        if rd != 0:
+            regs[rd] = result
+
+        PC = PC + 4
